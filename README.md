@@ -5,6 +5,12 @@
 
 ---
 
+### 🔗 Acesse o Protótipo Navegável e Funcional
+👉 **[Clique aqui para testar a aplicação online no Vercel](https://agendamento-etec-furlan.vercel.app/)**
+
+---
+---
+
 ## 📌 1. Contexto e Justificativa do Projeto
 
 Nas instituições públicas de ensino técnico e médio, como as unidades do **Centro Paula Souza (ETECs e FATECs)**, a Secretaria Acadêmica é o coração operacional do relacionamento com os estudantes. É nela que ocorrem solicitações diárias de declarações escolares, históricos, reconsiderações de notas, passes de transporte (EMTU/SPTrans), orientações de estágio e vida acadêmica.
