@@ -294,7 +294,7 @@ export const INITIAL_STUDENT_PROFILE = {
   nome: 'Laura Ferreira',
   rm: '21201',
   turma: '3º TI',
-  periodo: 'Tarde',
+  periodo: 'Manhã',
   curso: 'Informática para Internet',
   situacaoMatricula: 'Ativo',
   anoIngresso: '2025',
@@ -323,7 +323,7 @@ export const INITIAL_GUARDIAN_PROFILE = {
     rm: '21201',
     curso: 'Informática para Internet',
     turma: '3º TI',
-    periodo: 'Tarde',
+    periodo: 'Manhã',
     cin: '456.789.012-34',
     nomeResponsavel: 'Vitoria Mendes'
   }

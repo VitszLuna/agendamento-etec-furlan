@@ -183,14 +183,16 @@ export default function Cabecalho({
                         </button>
                       )}
 
-                      <button
-                        type="button"
-                        onClick={() => { setMenuAberto(false); aoAbrirConfiguracoes(); }}
-                        className="w-full text-left px-4 py-2.5 font-bold text-slate-800 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center gap-2.5 transition cursor-pointer"
-                      >
-                        <Settings size={16} className="text-[#b91c1c]" />
-                        <span>Configurações da Secretaria</span>
-                      </button>
+                      {perfilUsuario === 'admin' && (
+                        <button
+                          type="button"
+                          onClick={() => { setMenuAberto(false); aoAbrirConfiguracoes(); }}
+                          className="w-full text-left px-4 py-2.5 font-bold text-slate-800 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center gap-2.5 transition cursor-pointer"
+                        >
+                          <Settings size={16} className="text-[#b91c1c]" />
+                          <span>Configurações da Secretaria</span>
+                        </button>
+                      )}
 
                       <button
                         type="button"

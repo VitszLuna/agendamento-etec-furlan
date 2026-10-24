@@ -48,12 +48,18 @@ export default function App() {
   });
 
   useEffect(() => {
+    const rootEl = document.documentElement;
+    const bodyEl = document.body;
     if (darkMode) {
-      document.documentElement.classList.add('dark');
+      rootEl.classList.add('dark');
+      bodyEl.classList.add('dark');
+      rootEl.setAttribute('data-theme', 'dark');
     } else {
-      document.documentElement.classList.remove('dark');
+      rootEl.classList.remove('dark');
+      bodyEl.classList.remove('dark');
+      rootEl.setAttribute('data-theme', 'light');
     }
-    localStorage.setItem('etec-dark', darkMode);
+    localStorage.setItem('etec-dark', darkMode ? 'true' : 'false');
   }, [darkMode]);
 
   const mainRef = useRef(null);
@@ -210,7 +216,7 @@ export default function App() {
       : dadosAluno;
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 flex flex-col font-['Inter',sans-serif] text-base w-full max-w-full overflow-x-hidden transition-colors duration-200">
+    <div className={`min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 flex flex-col font-['Inter',sans-serif] text-base w-full max-w-full overflow-x-hidden transition-colors duration-200 ${darkMode ? 'dark' : ''}`}>
       <Cabecalho
         perfilUsuario={perfilUsuario}
         abaAtiva={abaAtiva}
@@ -337,7 +343,7 @@ export default function App() {
             Etec Antônio Furlan — Secretaria Acadêmica
           </p>
           <p className="text-xs text-slate-500 dark:text-slate-400 text-center">
-            Sistema de Agendamento de Atendimento · Centro Paula Souza · Barueri/SP
+            Rua João Batista Soares, 440 - Novo Centro Comercial de Barueri - Barueri/SP - CEP: 06401-135
           </p>
           <p className="text-xs text-slate-500 dark:text-slate-400 text-center">
             Atendimento presencial: Secretaria Acadêmica — Seg a Sex, 08h às 16h

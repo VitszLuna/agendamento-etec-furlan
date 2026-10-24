@@ -80,7 +80,7 @@ export default function AlunoAjuda() {
           <div className="space-y-3.5 text-xs sm:text-sm text-slate-600 dark:text-slate-400">
             <div className="flex items-start space-x-3">
               <MapPin size={18} className="text-[#b91c1c] flex-shrink-0 mt-0.5" />
-              <span>Av. Henrique Gonçalves Baptista, 350 - Jardim Belval, Barueri - SP</span>
+              <span>Rua João Batista Soares, 440 - Novo Centro Comercial de Barueri - Barueri/SP - CEP: 06401-135</span>
             </div>
 
             <div className="flex items-center space-x-3">

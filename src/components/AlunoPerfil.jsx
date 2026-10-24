@@ -21,7 +21,7 @@ export default function AlunoPerfil({ dadosPerfil, aoSalvarPerfil, aoVoltar }) {
     nome: dadosPerfil?.nome || 'Laura Ferreira',
     rm: dadosPerfil?.rm || '21201',
     turma: dadosPerfil?.turma || '3º TI',
-    periodo: dadosPerfil?.periodo || 'Tarde',
+    periodo: dadosPerfil?.periodo || 'Manhã',
     curso: dadosPerfil?.curso || 'Informática para Internet',
     situacaoMatricula: dadosPerfil?.situacaoMatricula || 'Ativo',
     anoIngresso: dadosPerfil?.anoIngresso || '2025',

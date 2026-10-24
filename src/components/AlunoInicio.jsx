@@ -52,7 +52,7 @@ export default function AlunoInicio({
                 {nomeEstudanteCompleto}
               </h3>
               <p className="text-xs sm:text-sm text-slate-700 dark:text-slate-300 font-medium">
-                {alunoVinculado.curso || '3º TI'} • {alunoVinculado.turma || '3º TI'} • Turno: {alunoVinculado.periodo || 'Tarde'} • CIN: {alunoVinculado.cin || '456.789.012-34'}
+                {alunoVinculado.curso || 'Informática para Internet'} • {alunoVinculado.turma || '3º TI'} • Turno: {alunoVinculado.periodo || 'Manhã'} • CIN: {alunoVinculado.cin || '456.789.012-34'}
               </p>
             </div>
           </div>
