@@ -10,6 +10,12 @@ Plataforma web inclusiva e responsiva para gestão inteligente de fluxo e elimin
 
 ---
 
+## Demonstração em Vídeo
+
+[![Demonstração do Sistema de Agendamento](https://img.youtube.com/vi/FPAO706Q93Q/maxresdefault.jpg)](https://www.youtube.com/watch?v=FPAO706Q93Q)
+
+---
+
 ## 1. Contexto e Justificativa do Projeto
 
 Nas instituições públicas de ensino técnico e médio, como as unidades do Centro Paula Souza (ETECs e FATECs), a Secretaria Acadêmica é o núcleo de relacionamento operacional com os estudantes e suas famílias. É o local onde ocorrem solicitações de declarações escolares, históricos, reconsiderações de notas, passes de transporte escolar, trancamentos e orientações pedagógicas.
