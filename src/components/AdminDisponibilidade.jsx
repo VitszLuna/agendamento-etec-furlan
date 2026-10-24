@@ -9,10 +9,6 @@ import {
   AlertCircle 
 } from 'lucide-react';
 
-/**
- * Componente da Visão de Disponibilidade do Administrador (Foto 3)
- * Adaptado com tipografia ampliada, botões táteis acessíveis e validação rigorosa.
- */
 export default function AdminDisponibilidade({
   disponibilidade,
   aoAtualizarDisponibilidade,
@@ -28,7 +24,6 @@ export default function AdminDisponibilidade({
   const [mensagemFeedback, setMensagemFeedback] = useState(null);
   const [erroBloqueio, setErroBloqueio] = useState('');
 
-  // Alternar atendimento no dia
   const alternarDia = (nomeDia) => {
     aoAtualizarDisponibilidade((prev) => ({
       ...prev,
@@ -39,7 +34,6 @@ export default function AdminDisponibilidade({
     }));
   };
 
-  // Remover horário
   const removerHorario = (nomeDia, horaParaRemover) => {
     aoAtualizarDisponibilidade((prev) => ({
       ...prev,
@@ -50,7 +44,6 @@ export default function AdminDisponibilidade({
     }));
   };
 
-  // Adicionar horário com validação estrita de formato HH:MM
   const adicionarHorario = (nomeDia) => {
     const hora = novoHorarioPorDia[nomeDia]?.trim();
     if (!hora) return;
@@ -79,10 +72,14 @@ export default function AdminDisponibilidade({
     setNovoHorarioPorDia((prev) => ({ ...prev, [nomeDia]: '' }));
   };
 
-  // Adicionar bloqueio com validação
-  const submeterBloqueio = (e) => {
+  const adicionarBloqueio = (e) => {
     e.preventDefault();
     setErroBloqueio('');
+
+    if (!motivoBloqueio.trim()) {
+      setErroBloqueio('Por favor, descreva o motivo do bloqueio (ex.: Reunião pedagógica, Feriado).');
+      return;
+    }
 
     if (!dataBloqueio) {
       setErroBloqueio('Selecione uma data para o bloqueio.');
@@ -90,16 +87,15 @@ export default function AdminDisponibilidade({
     }
 
     const partes = dataBloqueio.split('-');
-    const tituloFormatado = `Data: ${partes[2]}/${partes[1]}/${partes[0]}`;
-    const textoDetalhe = bloquearDiaInteiro 
-      ? `Dia inteiro • ${motivoBloqueio || 'Bloqueio administrativo'}`
-      : `${horaInicioBloqueio} às ${horaFimBloqueio} • ${motivoBloqueio || 'Período bloqueado'}`;
-
+    const dataFormatadaBr = `${partes[2]}/${partes[1]}/${partes[0]}`;
+    
     const novoBloqueio = {
       id: `block-${Date.now()}`,
-      titulo: tituloFormatado,
+      titulo: `${dataFormatadaBr} — ${motivoBloqueio}`,
       data: dataBloqueio,
-      detalhe: textoDetalhe,
+      detalhe: bloquearDiaInteiro 
+        ? `Dia inteiro • ${motivoBloqueio}` 
+        : `${horaInicioBloqueio} às ${horaFimBloqueio} • ${motivoBloqueio}`,
       diaInteiro: bloquearDiaInteiro,
       horarioInicio: bloquearDiaInteiro ? null : horaInicioBloqueio,
       horarioFim: bloquearDiaInteiro ? null : horaFimBloqueio,
@@ -107,284 +103,236 @@ export default function AdminDisponibilidade({
     };
 
     aoAtualizarPeriodosBloqueados((prev) => [novoBloqueio, ...prev]);
+
     setMotivoBloqueio('');
-    setMensagemFeedback('Período bloqueado com sucesso!');
-    setTimeout(() => setMensagemFeedback(null), 3000);
+    setMensagemFeedback('Período bloqueado com sucesso na agenda da Secretaria.');
+    setTimeout(() => setMensagemFeedback(null), 3500);
   };
 
-  // Remover bloqueio
   const removerBloqueio = (idBloqueio) => {
     aoAtualizarPeriodosBloqueados((prev) => prev.filter((b) => b.id !== idBloqueio));
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-      
-      {/* Cabeçalho */}
-      <div className="mb-8">
-        <h2 className="text-3xl font-extrabold text-slate-900 tracking-tight">
-          Disponibilidade
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10">
+      <div className="mb-6 sm:mb-8">
+        <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-slate-100 tracking-tight">
+          Horários e Disponibilidade
         </h2>
-        <p className="text-slate-600 text-base sm:text-lg mt-1 font-medium">
-          Defina os dias e horários de atendimento da Secretaria.
+        <p className="text-slate-600 dark:text-slate-400 text-sm sm:text-lg mt-1 font-medium">
+          Configure a grade semanal e adicione bloqueios pontuais na Secretaria Acadêmica.
         </p>
       </div>
 
       {mensagemFeedback && (
-        <div className="mb-6 p-4 bg-emerald-50 border-2 border-emerald-300 text-emerald-900 text-base font-bold rounded-xl flex items-center space-x-2">
-          <Check size={20} className="text-emerald-700" />
+        <div className="mb-6 p-4 bg-emerald-50 dark:bg-emerald-950/50 border-2 border-emerald-300 dark:border-emerald-700 text-emerald-950 dark:text-emerald-100 rounded-2xl flex items-center space-x-3 text-sm sm:text-base font-bold shadow-sm animate-in fade-in duration-150">
+          <Check size={20} className="text-emerald-700 dark:text-emerald-400 flex-shrink-0" />
           <span>{mensagemFeedback}</span>
         </div>
       )}
 
-      {/* Grid com 2 Colunas */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-        
-        {/* COLUNA ESQUERDA: Dias e Horários de Atendimento */}
-        <div className="lg:col-span-7 bg-white rounded-2xl border border-slate-200 p-6 sm:p-8 shadow-sm">
-          <h3 className="text-xl font-extrabold text-slate-900 mb-6">
-            Dias e horários de atendimento
-          </h3>
+      <div className="space-y-6 mb-10 sm:mb-14">
+        <h3 className="text-lg sm:text-xl font-bold text-slate-900 dark:text-slate-100">
+          Grade Semanal de Atendimento
+        </h3>
 
-          <div className="space-y-8 divide-y divide-slate-100">
-            {Object.entries(disponibilidade).map(([nomeDia, dadosDia], index) => (
-              <div key={nomeDia} className={index > 0 ? "pt-6" : ""}>
-                
-                {/* Linha do Dia e Toggle Switch "Com atendimento" */}
-                <div className="flex items-center justify-between mb-4">
-                  <span className="font-bold text-slate-900 text-base sm:text-lg">
-                    {nomeDia}
+        <div className="space-y-4">
+          {Object.entries(disponibilidade).map(([dia, config]) => (
+            <div 
+              key={dia}
+              className={`p-4 sm:p-6 rounded-2xl border-2 transition ${
+                config.ativo 
+                  ? 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 shadow-xs' 
+                  : 'bg-slate-100 dark:bg-slate-850 border-slate-300 dark:border-slate-800 opacity-60'
+              }`}
+            >
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-slate-100 dark:border-slate-800">
+                <div className="flex items-center space-x-3">
+                  <span className="font-extrabold text-slate-900 dark:text-slate-100 text-base sm:text-lg">
+                    {dia}
                   </span>
+                  <span className={`text-[11px] sm:text-xs font-bold px-2.5 py-0.5 rounded-full border ${
+                    config.ativo 
+                      ? 'bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800' 
+                      : 'bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border-slate-300 dark:border-slate-700'
+                  }`}>
+                    {config.ativo ? 'Atendimento Aberto' : 'Sem Atendimento'}
+                  </span>
+                </div>
 
-                  <div className="flex items-center space-x-3">
+                <button
+                  type="button"
+                  onClick={() => alternarDia(dia)}
+                  className={`self-start sm:self-auto px-4 py-2 rounded-xl text-xs sm:text-sm font-bold border-2 transition cursor-pointer ${
+                    config.ativo
+                      ? 'border-red-200 dark:border-red-900/60 text-red-700 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/40'
+                      : 'border-emerald-300 dark:border-emerald-700 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 bg-white dark:bg-slate-900'
+                  }`}
+                >
+                  {config.ativo ? 'Desativar este dia' : 'Ativar este dia'}
+                </button>
+              </div>
+
+              {config.ativo && (
+                <div className="pt-4 space-y-4">
+                  <div className="flex flex-wrap gap-2">
+                    {config.horarios.map((hora) => (
+                      <span
+                        key={hora}
+                        className="inline-flex items-center space-x-1.5 bg-slate-50 dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 px-3 py-1.5 rounded-xl text-xs sm:text-sm font-bold text-slate-800 dark:text-slate-200 group hover:border-red-300 transition"
+                      >
+                        <Clock size={14} className="text-slate-400" />
+                        <span>{hora}</span>
+                        <button
+                          type="button"
+                          onClick={() => removerHorario(dia, hora)}
+                          className="text-slate-400 hover:text-red-700 dark:hover:text-red-400 p-0.5 rounded-md transition cursor-pointer"
+                          title="Remover horário"
+                        >
+                          <X size={14} />
+                        </button>
+                      </span>
+                    ))}
+                  </div>
+
+                  <div className="flex items-center space-x-2 pt-2">
+                    <input
+                      type="text"
+                      placeholder="HH:MM (ex: 16:30)"
+                      value={novoHorarioPorDia[dia] || ''}
+                      onChange={(e) => setNovoHorarioPorDia({ ...novoHorarioPorDia, [dia]: e.target.value })}
+                      onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); adicionarHorario(dia); } }}
+                      className="px-3 py-2 bg-white dark:bg-slate-800 border-2 border-slate-300 dark:border-slate-700 rounded-xl text-xs sm:text-sm font-mono text-slate-900 dark:text-slate-100 w-36 focus:outline-none focus:ring-2 focus:ring-[#b91c1c]"
+                    />
                     <button
                       type="button"
-                      onClick={() => alternarDia(nomeDia)}
-                      className={`relative inline-flex h-7 w-14 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
-                        dadosDia.ativo ? 'bg-[#b91c1c]' : 'bg-slate-300'
-                      }`}
-                      role="switch"
-                      aria-checked={dadosDia.ativo}
+                      onClick={() => adicionarHorario(dia)}
+                      className="inline-flex items-center space-x-1 bg-slate-900 dark:bg-slate-100 hover:bg-slate-800 dark:hover:bg-slate-200 text-white dark:text-slate-900 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold transition cursor-pointer"
                     >
-                      <span
-                        aria-hidden="true"
-                        className={`pointer-events-none inline-block h-6 w-6 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
-                          dadosDia.ativo ? 'translate-x-7' : 'translate-x-0'
-                        }`}
-                      />
+                      <Plus size={16} />
+                      <span>Adicionar</span>
                     </button>
-                    <span className="text-sm font-bold text-slate-700">
-                      {dadosDia.ativo ? 'Com atendimento' : 'Sem atendimento'}
-                    </span>
                   </div>
                 </div>
-
-                {/* Lista de Horários do Dia em Tags Ampliadas */}
-                {dadosDia.ativo ? (
-                  <>
-                    <div className="grid grid-cols-3 sm:grid-cols-4 gap-2.5 mb-4">
-                      {dadosDia.horarios.map((hora) => (
-                        <div
-                          key={hora}
-                          className="flex items-center justify-between px-3.5 py-2.5 bg-white border-2 border-slate-200 rounded-xl text-sm font-bold text-slate-800 hover:border-slate-400 transition"
-                        >
-                          <span>{hora}</span>
-                          <button
-                            type="button"
-                            onClick={() => removerHorario(nomeDia, hora)}
-                            className="text-slate-400 hover:text-red-700 p-1 rounded transition cursor-pointer"
-                            title="Remover horário"
-                          >
-                            <X size={18} />
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-
-                    {/* Formulário para Adicionar Novo Horário */}
-                    <div className="flex items-center space-x-3 mt-3">
-                      <div className="relative w-36">
-                        <input
-                          type="text"
-                          placeholder="--:--"
-                          value={novoHorarioPorDia[nomeDia] || ''}
-                          onChange={(e) =>
-                            setNovoHorarioPorDia({
-                              ...novoHorarioPorDia,
-                              [nomeDia]: e.target.value
-                            })
-                          }
-                          className="w-full pl-4 pr-10 py-2.5 bg-white border border-slate-300 rounded-xl text-sm font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-red-500"
-                        />
-                        <Clock size={16} className="absolute right-3.5 top-3.5 text-slate-400 pointer-events-none" />
-                      </div>
-
-                      <button
-                        type="button"
-                        onClick={() => adicionarHorario(nomeDia)}
-                        className="flex items-center space-x-2 px-5 py-2.5 border-2 border-slate-300 hover:bg-slate-100 text-slate-800 rounded-xl text-sm font-bold transition cursor-pointer"
-                      >
-                        <Plus size={16} />
-                        <span>Adicionar</span>
-                      </button>
-                    </div>
-                  </>
-                ) : (
-                  <p className="text-sm text-slate-400 italic py-2">
-                    Atendimento desativado para este dia da semana.
-                  </p>
-                )}
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* COLUNA DIREITA: Bloquear datas e períodos */}
-        <div className="lg:col-span-5 space-y-8">
-          
-          {/* Card: Bloquear datas e períodos */}
-          <div className="bg-white rounded-2xl border border-slate-200 p-6 sm:p-8 shadow-sm">
-            <h3 className="text-xl font-extrabold text-slate-900">
-              Bloquear datas e períodos
-            </h3>
-            <p className="text-slate-600 text-sm mt-1 mb-6">
-              Horários bloqueados deixam de aparecer para os alunos.
-            </p>
-
-            <form onSubmit={submeterBloqueio} className="space-y-5">
-              {erroBloqueio && (
-                <div className="p-3 bg-red-50 border border-red-200 text-red-700 text-sm font-medium rounded-lg flex items-center space-x-2">
-                  <AlertCircle size={16} />
-                  <span>{erroBloqueio}</span>
-                </div>
               )}
+            </div>
+          ))}
+        </div>
+      </div>
 
-              {/* Data */}
+      <div className="space-y-6">
+        <h3 className="text-lg sm:text-xl font-bold text-slate-900 dark:text-slate-100 flex items-center space-x-2">
+          <Ban size={22} className="text-[#b91c1c]" />
+          <span>Bloqueios Pontuais e Feriados</span>
+        </h3>
+
+        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-4 sm:p-6 shadow-sm">
+          <h4 className="text-sm sm:text-base font-bold text-slate-900 dark:text-slate-100 mb-4">
+            Cadastrar Novo Bloqueio na Agenda
+          </h4>
+
+          {erroBloqueio && (
+            <div className="mb-4 p-3 bg-red-50 dark:bg-red-950/50 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 text-xs sm:text-sm font-semibold rounded-xl flex items-center space-x-2">
+              <AlertCircle size={16} className="flex-shrink-0" />
+              <span>{erroBloqueio}</span>
+            </div>
+          )}
+
+          <form onSubmit={adicionarBloqueio} className="space-y-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-bold text-slate-700 mb-2">
-                  Data
+                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                  Data do Bloqueio *
                 </label>
                 <input
                   type="date"
                   value={dataBloqueio}
                   onChange={(e) => setDataBloqueio(e.target.value)}
-                  className="w-full px-4 py-3 bg-white border border-slate-300 rounded-xl text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-red-500"
-                  required
+                  className="w-full px-3.5 py-2.5 bg-white dark:bg-slate-800 border-2 border-slate-300 dark:border-slate-700 rounded-xl text-xs sm:text-sm text-slate-900 dark:text-slate-100"
                 />
               </div>
 
-              {/* Checkbox Bloquear o dia inteiro */}
-              <div className="flex items-center space-x-3 pt-1">
-                <input
-                  type="checkbox"
-                  id="bloquearDiaInteiro"
-                  checked={bloquearDiaInteiro}
-                  onChange={(e) => setBloquearDiaInteiro(e.target.checked)}
-                  className="w-5 h-5 text-red-700 rounded border-slate-300 focus:ring-red-500 accent-[#b91c1c] cursor-pointer"
-                />
-                <label htmlFor="bloquearDiaInteiro" className="text-sm font-bold text-slate-800 cursor-pointer">
-                  Bloquear o dia inteiro
-                </label>
-              </div>
-
-              {!bloquearDiaInteiro && (
-                <div className="grid grid-cols-2 gap-4 pt-1">
-                  <div>
-                    <label className="block text-xs font-bold text-slate-700 mb-1">
-                      Início
-                    </label>
-                    <input
-                      type="time"
-                      value={horaInicioBloqueio}
-                      onChange={(e) => setHoraInicioBloqueio(e.target.value)}
-                      className="w-full px-3 py-2.5 border border-slate-300 rounded-xl text-sm text-slate-800 focus:ring-2 focus:ring-red-500"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-bold text-slate-700 mb-1">
-                      Fim
-                    </label>
-                    <input
-                      type="time"
-                      value={horaFimBloqueio}
-                      onChange={(e) => setHoraFimBloqueio(e.target.value)}
-                      className="w-full px-3 py-2.5 border border-slate-300 rounded-xl text-sm text-slate-800 focus:ring-2 focus:ring-red-500"
-                    />
-                  </div>
-                </div>
-              )}
-
-              {/* Motivo */}
               <div>
-                <label className="block text-sm font-bold text-slate-700 mb-2">
-                  Motivo (opcional)
+                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                  Motivo do Bloqueio *
                 </label>
                 <input
                   type="text"
+                  placeholder="Ex.: Reunião pedagógica, Feriado"
                   value={motivoBloqueio}
                   onChange={(e) => setMotivoBloqueio(e.target.value)}
-                  placeholder="Ex.: feriado, reunião"
-                  className="w-full px-4 py-3 bg-white border border-slate-300 rounded-xl text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-red-500"
+                  className="w-full px-3.5 py-2.5 bg-white dark:bg-slate-800 border-2 border-slate-300 dark:border-slate-700 rounded-xl text-xs sm:text-sm text-slate-900 dark:text-slate-100"
                 />
               </div>
+            </div>
 
-              {/* Botão Vermelho */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-2">
+              <label className="flex items-center space-x-2 text-xs sm:text-sm font-bold text-slate-800 dark:text-slate-200 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={bloquearDiaInteiro}
+                  onChange={(e) => setBloquearDiaInteiro(e.target.checked)}
+                  className="w-4 h-4 rounded text-[#b91c1c] accent-[#b91c1c]"
+                />
+                <span>Bloquear o dia inteiro (sem atendimentos)</span>
+              </label>
+
+              {!bloquearDiaInteiro && (
+                <div className="flex items-center space-x-2 text-xs sm:text-sm font-bold text-slate-700 dark:text-slate-300">
+                  <span>Das:</span>
+                  <input
+                    type="time"
+                    value={horaInicioBloqueio}
+                    onChange={(e) => setHoraInicioBloqueio(e.target.value)}
+                    className="px-2 py-1 bg-white dark:bg-slate-800 border rounded-lg text-xs font-mono"
+                  />
+                  <span>Às:</span>
+                  <input
+                    type="time"
+                    value={horaFimBloqueio}
+                    onChange={(e) => setHoraFimBloqueio(e.target.value)}
+                    className="px-2 py-1 bg-white dark:bg-slate-800 border rounded-lg text-xs font-mono"
+                  />
+                </div>
+              )}
+
               <button
                 type="submit"
-                className="w-full bg-[#b91c1c] hover:bg-[#991b1b] text-white font-bold py-3.5 px-6 rounded-xl text-base transition shadow-sm cursor-pointer"
+                className="inline-flex items-center justify-center space-x-2 bg-[#b91c1c] hover:bg-[#991b1b] text-white px-5 py-2.5 rounded-xl text-xs sm:text-sm font-bold shadow-sm transition active:scale-[0.98] cursor-pointer"
               >
-                Bloquear período
+                <Ban size={16} />
+                <span>Salvar Bloqueio</span>
               </button>
-            </form>
-          </div>
-
-          {/* Card: Bloqueios programados */}
-          <div className="bg-white rounded-2xl border border-slate-200 p-6 sm:p-8 shadow-sm">
-            <h3 className="text-xl font-extrabold text-slate-900 mb-5">
-              Bloqueios programados
-            </h3>
-
-            {periodosBloqueados.length === 0 ? (
-              <p className="text-sm text-slate-500 italic">
-                Nenhum bloqueio cadastrado no momento.
-              </p>
-            ) : (
-              <div className="space-y-4">
-                {periodosBloqueados.map((bloco) => (
-                  <div
-                    key={bloco.id}
-                    className="flex items-start justify-between p-4 rounded-xl border border-slate-200 bg-slate-50/50 hover:bg-slate-50 transition"
-                  >
-                    <div className="flex items-start space-x-3.5">
-                      <div className="mt-1 text-red-600">
-                        <Ban size={22} />
-                      </div>
-                      <div>
-                        <h4 className="text-sm sm:text-base font-bold text-slate-900">
-                          {bloco.titulo}
-                        </h4>
-                        <p className="text-xs sm:text-sm text-slate-600 mt-1">
-                          {bloco.detalhe}
-                        </p>
-                      </div>
-                    </div>
-
-                    <button
-                      type="button"
-                      onClick={() => removerBloqueio(bloco.id)}
-                      className="text-slate-400 hover:text-red-700 p-1.5 rounded-lg transition cursor-pointer"
-                      title="Excluir bloqueio"
-                    >
-                      <Trash2 size={20} />
-                    </button>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-
+            </div>
+          </form>
         </div>
 
+        <div className="space-y-3">
+          {periodosBloqueados.map((bloqueio) => (
+            <div
+              key={bloqueio.id}
+              className="p-4 bg-white dark:bg-slate-900 rounded-2xl border-2 border-slate-200 dark:border-slate-800 flex items-center justify-between gap-3 shadow-xs"
+            >
+              <div>
+                <h5 className="font-extrabold text-slate-900 dark:text-slate-100 text-sm sm:text-base">
+                  {bloqueio.titulo}
+                </h5>
+                <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 mt-0.5">
+                  {bloqueio.detalhe}
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => removerBloqueio(bloqueio.id)}
+                className="text-slate-400 hover:text-red-700 dark:hover:text-red-400 p-2 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer"
+                title="Remover bloqueio"
+              >
+                <Trash2 size={18} />
+              </button>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );

@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Cabecalho from './components/Cabecalho';
 import TelaLogin from './components/TelaLogin';
 import AdminAgenda from './components/AdminAgenda';
 import AdminDisponibilidade from './components/AdminDisponibilidade';
+import AdminConfiguracoes from './components/AdminConfiguracoes';
 import AlunoInicio from './components/AlunoInicio';
 import AlunoCatalogoServicos from './components/AlunoCatalogoServicos';
 import AlunoDetalhesServico from './components/AlunoDetalhesServico';
@@ -18,51 +19,49 @@ import {
   INITIAL_BLOCKED_PERIODS,
   INITIAL_STUDENT_NEXT_APPOINTMENT,
   INITIAL_STUDENT_PROFILE,
+  INITIAL_GUARDIAN_PROFILE,
+  INITIAL_SETTINGS,
   ALL_SERVICES
 } from './data/mockData';
 
-/**
- * Componente Principal da Aplicação
- * Gerencia o estado e navegação completa do sistema.
- * Código 100% em Português com validações e acessibilidade.
- */
 export default function App() {
-  // Perfil autenticado: 'guest' (login), 'admin' (funcionário) ou 'student' (aluno)
   const [perfilUsuario, setPerfilUsuario] = useState('guest');
-
-  // Aba selecionada no menu superior: 'inicio' | 'agenda' | 'disponibilidade' | 'agendar' | 'meus-agendamentos' | 'ajuda'
   const [abaAtiva, setAbaAtiva] = useState('inicio');
-
-  // Subtela interna da área do aluno: 'inicio' | 'catalogo' | 'detalhes-servico' | 'wizard-etapas' | 'meus-agendamentos' | 'ajuda' | 'perfil'
   const [subTelaAluno, setSubTelaAluno] = useState('inicio');
-
-  // Serviço em foco para consulta ou agendamento
   const [servicoSelecionado, setServicoSelecionado] = useState(ALL_SERVICES[0]);
 
-  // Lista geral de agendamentos da Secretaria (Admin)
   const [agendamentosGerais, setAgendamentosGerais] = useState(INITIAL_APPOINTMENTS);
-
-  // Disponibilidade configurada pela Secretaria
   const [disponibilidadeSemanal, setDisponibilidadeSemanal] = useState(INITIAL_AVAILABILITY);
-
-  // Períodos e datas bloqueados pela administração
   const [periodosBloqueados, setPeriodosBloqueados] = useState(INITIAL_BLOCKED_PERIODS);
-
-  // Dados do perfil do aluno (editável e com validação)
+  const [configuracoesSistema, setConfiguracoesSistema] = useState(INITIAL_SETTINGS);
   const [dadosAluno, setDadosAluno] = useState(INITIAL_STUDENT_PROFILE);
-
-  // Próximo agendamento ativo da aluna Débora
+  const [dadosResponsavel, setDadosResponsavel] = useState(INITIAL_GUARDIAN_PROFILE);
   const [proximoAgendamento, setProximoAgendamento] = useState(INITIAL_STUDENT_NEXT_APPOINTMENT);
-
-  // Lista de agendamentos do aluno
-  const [agendamentosDoAluno, setAgendamentosDoAluno] = useState([
-    INITIAL_STUDENT_NEXT_APPOINTMENT
-  ]);
-
-  // Agendamento aberto no modal de detalhes
+  const [agendamentosDoAluno, setAgendamentosDoAluno] = useState([INITIAL_STUDENT_NEXT_APPOINTMENT]);
   const [atendimentoDetalhes, setAtendimentoDetalhes] = useState(null);
 
-  // Manipulador de Login
+  const [darkMode, setDarkMode] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('etec-dark') === 'true';
+    }
+    return false;
+  });
+
+  useEffect(() => {
+    if (darkMode) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+    localStorage.setItem('etec-dark', darkMode);
+  }, [darkMode]);
+
+  const mainRef = useRef(null);
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    if (mainRef.current) mainRef.current.scrollTop = 0;
+  };
+
   const aoLogar = (papel) => {
     setPerfilUsuario(papel);
     if (papel === 'admin') {
@@ -71,16 +70,16 @@ export default function App() {
       setAbaAtiva('inicio');
       setSubTelaAluno('inicio');
     }
+    scrollToTop();
   };
 
-  // Manipulador de Logout
   const aoDeslogar = () => {
     setPerfilUsuario('guest');
     setAbaAtiva('inicio');
     setSubTelaAluno('inicio');
+    scrollToTop();
   };
 
-  // Alternar diretamente entre perfis
   const aoAlternarPerfil = (novoPapel) => {
     setPerfilUsuario(novoPapel);
     if (novoPapel === 'admin') {
@@ -89,31 +88,35 @@ export default function App() {
       setAbaAtiva('inicio');
       setSubTelaAluno('inicio');
     }
+    scrollToTop();
   };
 
-  // Navegação entre abas principais
+  const aoAbrirConfiguracoes = () => {
+    if (perfilUsuario !== 'admin') setPerfilUsuario('admin');
+    setAbaAtiva('configuracoes');
+    scrollToTop();
+  };
+
   const aoMudarAba = (aba) => {
     setAbaAtiva(aba);
-    if (perfilUsuario === 'student') {
+    if (perfilUsuario === 'student' || perfilUsuario === 'guardian') {
       if (aba === 'inicio') setSubTelaAluno('inicio');
       else if (aba === 'agendar') setSubTelaAluno('catalogo');
       else if (aba === 'meus-agendamentos') setSubTelaAluno('meus-agendamentos');
       else if (aba === 'ajuda') setSubTelaAluno('ajuda');
     }
+    scrollToTop();
   };
 
-  // Atualizar o status de um atendimento pelo administrador
   const aoAtualizarStatus = (idAgendamento, novoStatus) => {
     setAgendamentosGerais((prev) =>
       prev.map((app) =>
         app.id === idAgendamento ? { ...app, status: novoStatus } : app
       )
     );
-
     if (proximoAgendamento && proximoAgendamento.id === idAgendamento) {
       setProximoAgendamento((prev) => ({ ...prev, status: novoStatus }));
     }
-
     setAgendamentosDoAluno((prev) =>
       prev.map((app) =>
         app.id === idAgendamento ? { ...app, status: novoStatus } : app
@@ -121,36 +124,36 @@ export default function App() {
     );
   };
 
-  // Selecionar serviço para ver tela de detalhes
   const aoSelecionarServico = (servico) => {
     setServicoSelecionado(servico);
     setAbaAtiva('agendar');
     setSubTelaAluno('detalhes-servico');
+    scrollToTop();
   };
 
-  // Iniciar agendamento
   const aoIniciarAgendamento = (tituloServico = '') => {
     setAbaAtiva('agendar');
     if (tituloServico) {
-      const servicoEncontrado = ALL_SERVICES.find(
-        (s) => s.title.toLowerCase() === tituloServico.toLowerCase()
+      const s = ALL_SERVICES.find(
+        (sv) => sv.title.toLowerCase() === tituloServico.toLowerCase()
       );
-      if (servicoEncontrado) {
-        setServicoSelecionado(servicoEncontrado);
+      if (s) {
+        setServicoSelecionado(s);
         setSubTelaAluno('detalhes-servico');
+        scrollToTop();
         return;
       }
     }
     setSubTelaAluno('catalogo');
+    scrollToTop();
   };
 
-  // Avançar para o wizard de agendamento em etapas
   const aoAvancarParaEtapas = (servico) => {
     setServicoSelecionado(servico);
     setSubTelaAluno('wizard-etapas');
+    scrollToTop();
   };
 
-  // Concluir agendamento no wizard
   const aoConcluirAgendamento = (novoAtendimento) => {
     setProximoAgendamento(novoAtendimento);
     setAgendamentosDoAluno((prev) => [novoAtendimento, ...prev]);
@@ -168,9 +171,9 @@ export default function App() {
       },
       ...prev
     ]);
+    scrollToTop();
   };
 
-  // Cancelar atendimento agendado
   const aoCancelarAgendamento = (idAgendamento) => {
     aoAtualizarStatus(idAgendamento, 'Cancelado');
     if (proximoAgendamento && proximoAgendamento.id === idAgendamento) {
@@ -178,33 +181,49 @@ export default function App() {
     }
   };
 
-  // Salvar perfil do aluno com validação
   const aoSalvarPerfil = (novosDados) => {
     setDadosAluno(novosDados);
   };
 
-  // Se o usuário não estiver autenticado, exibe a tela de login
   if (perfilUsuario === 'guest') {
-    return <TelaLogin aoLogar={aoLogar} />;
+    return (
+      <div className={darkMode ? 'dark' : ''}>
+        <TelaLogin aoLogar={aoLogar} darkMode={darkMode} setDarkMode={setDarkMode} />
+      </div>
+    );
   }
 
+  const dadosParaAgendamento =
+    perfilUsuario === 'guardian'
+      ? {
+          nome: dadosResponsavel.alunoVinculado.nome,
+          rm: dadosResponsavel.alunoVinculado.rm,
+          turma: dadosResponsavel.alunoVinculado.turma,
+          curso: dadosResponsavel.alunoVinculado.curso,
+          email: dadosAluno.email,
+          telefone: dadosAluno.telefone,
+          nomeResponsavel: dadosResponsavel.nome,
+          cinResponsavel: dadosResponsavel.cin,
+          parentescoResponsavel: dadosResponsavel.parentesco,
+          telefoneResponsavel: dadosResponsavel.telefone
+        }
+      : dadosAluno;
+
   return (
-    <div className="min-h-screen bg-[#f8fafc] text-slate-900 flex flex-col font-['Inter',sans-serif] text-base">
-      
-      {/* Cabeçalho da Aplicação */}
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 flex flex-col font-['Inter',sans-serif] text-base w-full max-w-full overflow-x-hidden transition-colors duration-200">
       <Cabecalho
         perfilUsuario={perfilUsuario}
         abaAtiva={abaAtiva}
         aoMudarAba={aoMudarAba}
         aoDeslogar={aoDeslogar}
         aoAlternarPerfil={aoAlternarPerfil}
-        aoAbrirPerfil={() => setSubTelaAluno('perfil')}
+        aoAbrirPerfil={() => { setSubTelaAluno('perfil'); scrollToTop(); }}
+        aoAbrirConfiguracoes={aoAbrirConfiguracoes}
+        darkMode={darkMode}
+        setDarkMode={setDarkMode}
       />
 
-      {/* Conteúdo Principal */}
-      <main className="flex-1 pb-20">
-        
-        {/* ======================= ÁREA DO ADMINISTRADOR ======================= */}
+      <main ref={mainRef} className="flex-1 pb-16 sm:pb-20 w-full max-w-full overflow-x-hidden">
         {perfilUsuario === 'admin' && (
           <>
             {abaAtiva === 'agenda' && (
@@ -214,7 +233,6 @@ export default function App() {
                 aoAbrirDetalhes={(app) => setAtendimentoDetalhes(app)}
               />
             )}
-
             {abaAtiva === 'disponibilidade' && (
               <AdminDisponibilidade
                 disponibilidade={disponibilidadeSemanal}
@@ -223,13 +241,18 @@ export default function App() {
                 aoAtualizarPeriodosBloqueados={setPeriodosBloqueados}
               />
             )}
+            {abaAtiva === 'configuracoes' && (
+              <AdminConfiguracoes
+                configuracoes={configuracoesSistema}
+                aoSalvarConfiguracoes={setConfiguracoesSistema}
+                aoAlternarPerfil={aoAlternarPerfil}
+              />
+            )}
           </>
         )}
 
-        {/* ======================= ÁREA DO ALUNO ======================= */}
-        {perfilUsuario === 'student' && (
+        {(perfilUsuario === 'student' || perfilUsuario === 'guardian') && (
           <>
-            {/* 1. Tela Inicial do Aluno */}
             {subTelaAluno === 'inicio' && (
               <AlunoInicio
                 proximoAtendimento={proximoAgendamento}
@@ -239,45 +262,43 @@ export default function App() {
                   if (aba === 'agendar') aoIniciarAgendamento();
                   else aoMudarAba(aba);
                 }}
+                isGuardian={perfilUsuario === 'guardian'}
+                alunoVinculado={dadosResponsavel.alunoVinculado}
+                dadosAluno={dadosAluno}
+                dadosResponsavel={dadosResponsavel}
               />
             )}
-
-            {/* 2. Catálogo de Serviços */}
             {subTelaAluno === 'catalogo' && (
               <AlunoCatalogoServicos
                 aoSelecionarServico={aoSelecionarServico}
                 aoNavegarParaInicio={() => {
                   setAbaAtiva('inicio');
                   setSubTelaAluno('inicio');
+                  scrollToTop();
                 }}
               />
             )}
-
-            {/* 3. Detalhes do Serviço Selecionado */}
             {subTelaAluno === 'detalhes-servico' && (
               <AlunoDetalhesServico
                 servico={servicoSelecionado}
-                aoVoltarParaCatalogo={() => setSubTelaAluno('catalogo')}
+                aoVoltarParaCatalogo={() => { setSubTelaAluno('catalogo'); scrollToTop(); }}
                 aoAvancarParaAgendamento={aoAvancarParaEtapas}
               />
             )}
-
-            {/* 4. Wizard em Etapas de Agendamento */}
             {subTelaAluno === 'wizard-etapas' && (
               <AlunoAgendamentoEtapas
                 servico={servicoSelecionado}
-                dadosAluno={dadosAluno}
-                aoCancelar={() => setSubTelaAluno('detalhes-servico')}
+                dadosAluno={dadosParaAgendamento}
+                aoCancelar={() => { setSubTelaAluno('detalhes-servico'); scrollToTop(); }}
                 aoConcluirAgendamento={aoConcluirAgendamento}
                 aoMudarAba={(aba) => {
                   setAbaAtiva(aba);
                   if (aba === 'inicio') setSubTelaAluno('inicio');
                   else if (aba === 'meus-agendamentos') setSubTelaAluno('meus-agendamentos');
+                  scrollToTop();
                 }}
               />
             )}
-
-            {/* 5. Meus Agendamentos */}
             {subTelaAluno === 'meus-agendamentos' && (
               <AlunoMeusAgendamentos
                 agendamentos={agendamentosDoAluno}
@@ -286,24 +307,18 @@ export default function App() {
                 aoCancelarAgendamento={aoCancelarAgendamento}
               />
             )}
-
-            {/* 6. Ajuda e Dúvidas Frequentes */}
             {subTelaAluno === 'ajuda' && <AlunoAjuda />}
-
-            {/* 7. Meu Perfil de Aluno */}
             {subTelaAluno === 'perfil' && (
               <AlunoPerfil
                 dadosPerfil={dadosAluno}
                 aoSalvarPerfil={aoSalvarPerfil}
-                aoVoltar={() => setSubTelaAluno('inicio')}
+                aoVoltar={() => { setSubTelaAluno('inicio'); scrollToTop(); }}
               />
             )}
           </>
         )}
-
       </main>
 
-      {/* Modal de Detalhes de Atendimento */}
       <ModalDetalhesAtendimento
         estaAberto={Boolean(atendimentoDetalhes)}
         atendimento={atendimentoDetalhes}
@@ -311,9 +326,28 @@ export default function App() {
         aoCancelarAtendimento={aoCancelarAgendamento}
       />
 
-      {/* Rodapé Acessível */}
-      <footer className="border-t border-slate-200 bg-white py-6 text-center text-sm font-medium text-slate-500">
-        Etec Antônio Furlan • Centro Paula Souza — Sistema de Agendamento de Atendimento
+      <footer className="border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 py-8 px-4 w-full max-w-full">
+        <div className="max-w-5xl mx-auto flex flex-col items-center gap-3">
+          <div className="flex items-center gap-3 bg-white px-3.5 py-1.5 rounded-xl border border-slate-200 shadow-xs">
+            <img src="/etec.png" alt="Etec Antônio Furlan" className="h-6 w-auto object-contain" onError={(e) => { e.target.style.display = 'none'; }} />
+            <span className="h-4 w-px bg-slate-200"></span>
+            <img src="/cps.png" alt="Centro Paula Souza" className="h-6 w-auto object-contain" onError={(e) => { e.target.style.display = 'none'; }} />
+          </div>
+          <p className="text-sm font-semibold text-slate-800 dark:text-slate-200 text-center">
+            Etec Antônio Furlan — Secretaria Acadêmica
+          </p>
+          <p className="text-xs text-slate-500 dark:text-slate-400 text-center">
+            Sistema de Agendamento de Atendimento · Centro Paula Souza · Barueri/SP
+          </p>
+          <p className="text-xs text-slate-500 dark:text-slate-400 text-center">
+            Atendimento presencial: Secretaria Acadêmica — Seg a Sex, 08h às 16h
+          </p>
+          <div className="mt-1 pt-3 border-t border-slate-100 dark:border-slate-800 w-full text-center">
+            <p className="text-[11px] text-slate-400 dark:text-slate-500 font-medium">
+              © 2026 LV2PL · Todos os direitos reservados
+            </p>
+          </div>
+        </div>
       </footer>
     </div>
   );
